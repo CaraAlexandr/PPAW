@@ -20,7 +20,7 @@ Aplicația este construită pe arhitectură în trei straturi (Presentation → 
 
 ## 2. Schema Bazei de Date
 
-![Schema Bazei de Date](img/Database_Schema___Password_Vault.png)
+![Schema Bazei de Date](img/lab1/Database_Schema___Password_Vault.png)
 
 ### Descrierea Schemei
 
@@ -102,7 +102,7 @@ Tabel care permite partajarea intrărilor din seif între utilizatori, o funcți
 
 ## 3. Fluxul de Generare și Validare a Parolelor
 
-![Flux de Generare și Validare Parole](img/Password_Generation_Validation_Flow.png)
+![Flux de Generare și Validare Parole](img/lab1/Password_Generation_Validation_Flow.png)
 
 ### Descrierea Fluxului
 
@@ -174,7 +174,7 @@ Acest flux asigură că utilizatorii pot genera doar parole care se încadrează
 
 ## 4. Comparația Planurilor de Serviciu
 
-![Comparația Planurilor](img/Plan_Comparison_and_Limitations.png)
+![Comparația Planurilor](img/lab1/Plan_Comparison_and_Limitations.png)
 
 ### Descrierea Planurilor
 
