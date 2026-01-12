@@ -105,16 +105,15 @@ The application exposes JDWP debug port `5005` when running in Docker. To connec
 }
 ```
 
-### 3. Database Migrations
+### 3. Database Schema
 
-Flyway will automatically run migrations on application startup. The migrations include:
+**Code-First Approach**: The database schema is automatically generated from JPA entities on application startup using Hibernate.
 
-- **V1**: Creates `service_plans` and `plan_limits` tables
-- **V2**: Creates `users` table
-- **V3**: Creates `vault_items` table
-- **V4**: Creates `password_history` table
-- **V5**: Creates `shared_vault_items` table
-- **V6**: Seeds initial service plans (Free, Usual, Premium)
+- **Schema Creation**: Hibernate will create/update tables based on `@Entity` classes
+- **Initial Data**: Service plans (Free, Usual, Premium) are automatically seeded via `DataInitializer`
+- **Configuration**: Set `spring.jpa.hibernate.ddl-auto=update` in `application.properties`
+
+**Note**: Flyway migrations are disabled. Old migration files in `db/migration/` are kept for reference only.
 
 ## Database Schema
 

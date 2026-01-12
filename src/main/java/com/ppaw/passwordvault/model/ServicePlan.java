@@ -8,8 +8,12 @@ import lombok.AllArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Index;
+
 @Entity
-@Table(name = "service_plans")
+@Table(name = "service_plans", schema = "vault_schema", indexes = {
+    @Index(name = "idx_service_plans_active", columnList = "is_active")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

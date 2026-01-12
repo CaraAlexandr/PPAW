@@ -8,7 +8,10 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "password_history")
+@Table(name = "password_history", schema = "vault_schema", indexes = {
+    @Index(name = "idx_password_history_vault_item_id", columnList = "vault_item_id"),
+    @Index(name = "idx_password_history_created_at", columnList = "created_at")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

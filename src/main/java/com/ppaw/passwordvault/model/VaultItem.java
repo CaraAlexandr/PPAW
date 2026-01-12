@@ -9,7 +9,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "vault_items")
+@Table(name = "vault_items", schema = "vault_schema", indexes = {
+    @Index(name = "idx_vault_items_user_id", columnList = "user_id"),
+    @Index(name = "idx_vault_items_folder", columnList = "folder"),
+    @Index(name = "idx_vault_items_created_at", columnList = "created_at")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
