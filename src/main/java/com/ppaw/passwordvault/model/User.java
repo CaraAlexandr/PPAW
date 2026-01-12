@@ -38,6 +38,14 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    // NOUĂ PROPRIETATE 1: Data ultimei autentificări
+    @Column(name = "last_login_at")
+    private LocalDateTime lastLoginAt;
+
+    // NOUĂ PROPRIETATE 2: Numărul de autentificări
+    @Column(nullable = false, name = "login_count")
+    private Integer loginCount = 0;
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -46,6 +54,9 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VaultItem> vaultItems;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AuditLog> auditLogs;
 
     @PrePersist
     protected void onCreate() {

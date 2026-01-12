@@ -29,7 +29,8 @@ public class ServicePlan {
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(nullable = false, length = 3)
+    // MODIFICARE TIP DATE: de la VARCHAR(3) la VARCHAR(10) pentru a suporta coduri monede mai lungi
+    @Column(nullable = false, length = 10)
     private String currency = "USD";
 
     @Column(nullable = false)
