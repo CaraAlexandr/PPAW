@@ -1,0 +1,31 @@
+@startuml Simple Flow - Password Vault
+
+!theme plain
+skinparam activity {
+  BackgroundColor #LightBlue
+  BorderColor #DarkBlue
+}
+
+start
+
+:User makes request;
+
+:Controller receives request;
+
+:Service validates plan limits;
+
+if (Plan limit exceeded?) then (yes)
+  :Return Error 403;
+  stop
+else (no)
+  :Process request;
+endif
+
+:Repository saves/reads data;
+
+:Return response to user;
+
+stop
+
+@enduml
+

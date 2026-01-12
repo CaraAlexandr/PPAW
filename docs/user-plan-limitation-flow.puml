@@ -1,0 +1,155 @@
+@startuml User Plan Limitation Flow
+
+!theme plain
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor User
+participant "REST Controller" as Controller
+participant "Service Layer" as Service
+participant "PlanService" as PlanService
+participant "UserRepository" as UserRepo
+participant "PlanLimitsRepository" as LimitsRepo
+participant "VaultRepository" as VaultRepo
+database "PostgreSQL" as DB
+
+== User Registration / Login ==
+
+User -> Controller: POST /api/auth/register\n{username, email, password}
+Controller -> Service: registerUser()
+Service -> PlanService: getDefaultPlan()\n(Free Plan)
+PlanService -> DB: SELECT * FROM service_plans\nWHERE name = 'Free'
+DB --> PlanService: Free Plan
+PlanService --> Service: ServicePlan (Free)
+Service -> UserRepo: save(user)
+UserRepo -> DB: INSERT INTO users
+DB --> UserRepo: User created
+UserRepo --> Service: User
+Service --> Controller: UserDTO
+Controller --> User: 201 Created
+
+== Create Vault Item (Plan Limitation Check) ==
+
+User -> Controller: POST /api/vault\n{title, password, ...}
+Controller -> Service: createVaultItem(userId, item)
+Service -> UserRepo: findById(userId)
+UserRepo -> DB: SELECT * FROM users\nWHERE id = userId
+DB --> UserRepo: User with plan_id
+UserRepo --> Service: User
+
+Service -> PlanService: getPlanLimits(user.servicePlanId)
+PlanService -> LimitsRepo: findByPlanId()
+LimitsRepo -> DB: SELECT * FROM plan_limits\nWHERE plan_id = ?
+DB --> LimitsRepo: PlanLimits
+LimitsRepo --> PlanService: PlanLimits
+PlanService --> Service: PlanLimits
+
+Service -> VaultRepo: countByUserId(userId)
+VaultRepo -> DB: SELECT COUNT(*) FROM vault_items\nWHERE user_id = ?
+DB --> VaultRepo: Count
+
+alt Count >= PlanLimits.maxVaultItems
+    Service -> Service: **LIMIT EXCEEDED**
+    Service --> Controller: 403 Forbidden\n"Maximum vault items limit reached"
+    Controller --> User: Error Response
+else Count < PlanLimits.maxVaultItems
+    Service -> Service: Encrypt password
+    Service -> VaultRepo: save(vaultItem)
+    VaultRepo -> DB: INSERT INTO vault_items
+    DB --> VaultRepo: VaultItem created
+    VaultRepo --> Service: VaultItem
+    Service --> Controller: VaultItemDTO
+    Controller --> User: 201 Created
+end
+
+== Generate Password (Plan Limitation Check) ==
+
+User -> Controller: POST /api/password/generate\n{length: 20, ...}
+Controller -> Service: generatePassword(userId, options)
+Service -> UserRepo: findById(userId)
+UserRepo -> DB: SELECT * FROM users\nWHERE id = userId
+DB --> UserRepo: User
+UserRepo --> Service: User
+
+Service -> PlanService: getPlanLimits(user.servicePlanId)
+PlanService -> LimitsRepo: findByPlanId()
+LimitsRepo -> DB: SELECT * FROM plan_limits\nWHERE plan_id = ?
+DB --> LimitsRepo: PlanLimits
+LimitsRepo --> PlanService: PlanLimits
+PlanService --> Service: PlanLimits
+
+alt options.length > PlanLimits.maxPasswordLength
+    Service -> Service: **LIMIT EXCEEDED**
+    Service --> Controller: 403 Forbidden\n"Password length exceeds plan limit"
+    Controller --> User: Error Response
+else options.length <= PlanLimits.maxPasswordLength
+    Service -> Service: Validate excludeAmbiguous\nbased on plan
+    Service -> Service: Generate password\nwith plan restrictions
+    Service --> Controller: GeneratedPasswordDTO
+    Controller --> User: 200 OK\n{password: "..."}
+end
+
+== Export Vault (Plan Limitation Check) ==
+
+User -> Controller: GET /api/vault/export
+Controller -> Service: exportVault(userId)
+Service -> UserRepo: findById(userId)
+UserRepo -> DB: SELECT * FROM users\nWHERE id = userId
+DB --> UserRepo: User
+UserRepo --> Service: User
+
+Service -> PlanService: getPlanLimits(user.servicePlanId)
+PlanService -> LimitsRepo: findByPlanId()
+LimitsRepo -> DB: SELECT * FROM plan_limits\nWHERE plan_id = ?
+DB --> LimitsRepo: PlanLimits
+LimitsRepo --> PlanService: PlanLimits
+
+alt !PlanLimits.canExport
+    Service -> Service: **FEATURE NOT AVAILABLE**
+    Service --> Controller: 403 Forbidden\n"Export not available in your plan"
+    Controller --> User: Error Response
+else PlanLimits.canExport
+    Service -> VaultRepo: findAllByUserId(userId)
+    VaultRepo -> DB: SELECT * FROM vault_items\nWHERE user_id = ?
+    DB --> VaultRepo: List<VaultItem>
+    VaultRepo --> Service: List<VaultItem>
+    Service -> Service: Generate CSV/JSON export
+    Service --> Controller: ExportFileDTO
+    Controller --> User: 200 OK\nFile download
+end
+
+== Share Vault Item (Premium Feature) ==
+
+User -> Controller: POST /api/vault/{id}/share\n{sharedWithUserId, canEdit}
+Controller -> Service: shareVaultItem(userId, itemId, shareRequest)
+Service -> UserRepo: findById(userId)
+UserRepo -> DB: SELECT * FROM users\nWHERE id = userId
+DB --> UserRepo: User
+UserRepo --> Service: User
+
+Service -> PlanService: getPlanLimits(user.servicePlanId)
+PlanService -> LimitsRepo: findByPlanId()
+LimitsRepo -> DB: SELECT * FROM plan_limits\nWHERE plan_id = ?
+DB --> LimitsRepo: PlanLimits
+LimitsRepo --> PlanService: PlanLimits
+
+alt !PlanLimits.canShare
+    Service -> Service: **FEATURE NOT AVAILABLE**
+    Service --> Controller: 403 Forbidden\n"Sharing not available in your plan"
+    Controller --> User: Error Response
+else PlanLimits.canShare
+    Service -> VaultRepo: findById(itemId)
+    VaultRepo -> DB: SELECT * FROM vault_items\nWHERE id = ?
+    DB --> VaultRepo: VaultItem
+    VaultRepo --> Service: VaultItem
+    
+    Service -> Service: Create SharedVaultItem
+    Service -> DB: INSERT INTO shared_vault_items
+    DB --> Service: SharedVaultItem created
+    Service --> Controller: SharedVaultItemDTO
+    Controller --> User: 201 Created
+end
+
+@enduml
+

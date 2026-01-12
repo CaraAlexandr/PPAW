@@ -1,0 +1,64 @@
+@startuml Simple Database Tables - Password Vault
+
+!theme plain
+skinparam linetype ortho
+skinparam roundcorner 10
+
+entity "service_plans" {
+  * id
+  --
+  * name
+  * price
+}
+
+entity "plan_limits" {
+  * id
+  * plan_id
+  --
+  * max_vault_items
+  * max_password_length
+  * can_export
+  * can_share
+}
+
+entity "users" {
+  * id
+  * plan_id
+  --
+  * username
+  * email
+  * password_hash
+}
+
+entity "vault_items" {
+  * id
+  * user_id
+  --
+  * title
+  * encrypted_password
+  * url
+}
+
+entity "password_history" {
+  * id
+  * vault_item_id
+  --
+  * encrypted_password
+}
+
+entity "shared_vault_items" {
+  * id
+  * vault_item_id
+  * shared_with_user_id
+  --
+  * can_edit
+}
+
+service_plans ||--|| plan_limits
+service_plans ||--o{ users
+users ||--o{ vault_items
+vault_items ||--o{ password_history
+vault_items ||--o{ shared_vault_items
+
+@enduml
+

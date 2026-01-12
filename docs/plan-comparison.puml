@@ -1,0 +1,76 @@
+@startuml Plan Comparison and Limitations
+
+!theme plain
+skinparam roundcorner 10
+skinparam shadowing false
+
+package "Service Plans Comparison" {
+  
+  rectangle "FREE PLAN" as FreePlan #LightBlue {
+    object "Price: $0.00" as FreePrice
+    object "Max Vault Items: 20" as FreeItems
+    object "Max Password Length: 16" as FreeLength
+    object "Export: ❌" as FreeExport
+    object "Import: ❌" as FreeImport
+    object "Share: ❌" as FreeShare
+    object "History Versions: 0" as FreeHistory
+    object "Attachments: ❌" as FreeAttach
+    object "Max Devices: 1" as FreeDevices
+    object "Exclude Ambiguous: ❌" as FreeAmbiguous
+  }
+  
+  rectangle "USUAL PLAN" as UsualPlan #LightGreen {
+    object "Price: $4.99/month" as UsualPrice
+    object "Max Vault Items: 200" as UsualItems
+    object "Max Password Length: 32" as UsualLength
+    object "Export: ✅" as UsualExport
+    object "Import: ❌" as UsualImport
+    object "Share: ❌" as UsualShare
+    object "History Versions: 3" as UsualHistory
+    object "Attachments: ❌" as UsualAttach
+    object "Max Devices: 3" as UsualDevices
+    object "Exclude Ambiguous: ✅" as UsualAmbiguous
+  }
+  
+  rectangle "PREMIUM PLAN" as PremiumPlan #LightYellow {
+    object "Price: $9.99/month" as PremiumPrice
+    object "Max Vault Items: 2000" as PremiumItems
+    object "Max Password Length: 64" as PremiumLength
+    object "Export: ✅" as PremiumExport
+    object "Import: ✅" as PremiumImport
+    object "Share: ✅" as PremiumShare
+    object "History Versions: 10" as PremiumHistory
+    object "Attachments: ✅" as PremiumAttach
+    object "Max Devices: 10" as PremiumDevices
+    object "Exclude Ambiguous: ✅" as PremiumAmbiguous
+  }
+}
+
+' Show relationships
+FreePlan -[hidden]right- UsualPlan
+UsualPlan -[hidden]right- PremiumPlan
+
+note right of FreePlan
+  **Use Case:**
+  Basic password storage
+  for personal use
+  Limited functionality
+end note
+
+note right of UsualPlan
+  **Use Case:**
+  Power users who need
+  export functionality
+  and more storage
+end note
+
+note right of PremiumPlan
+  **Use Case:**
+  Teams and professionals
+  requiring sharing,
+  collaboration, and
+  advanced features
+end note
+
+@enduml
+

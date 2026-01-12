@@ -1,0 +1,99 @@
+@startuml Plan Upgrade Flow
+
+!theme plain
+skinparam sequenceArrowThickness 2
+skinparam roundcorner 10
+skinparam maxmessagesize 60
+
+actor User
+participant "Frontend/Client" as Client
+participant "REST Controller" as Controller
+participant "PlanService" as PlanService
+participant "UserService" as UserService
+participant "UserRepository" as UserRepo
+database "PostgreSQL" as DB
+
+== View Current Plan ==
+
+User -> Client: Open Plan Settings
+Client -> Controller: GET /api/users/me/plan
+Controller -> UserService: getCurrentUserPlan(userId)
+UserService -> UserRepo: findById(userId)
+UserRepo -> DB: SELECT u.*, sp.*, pl.*\nFROM users u\nJOIN service_plans sp ON u.service_plan_id = sp.id\nJOIN plan_limits pl ON pl.plan_id = sp.id
+DB --> UserRepo: User with Plan and Limits
+UserRepo --> UserService: User
+UserService --> Controller: UserPlanDTO
+Controller --> Client: Current Plan Info
+Client --> User: Display: "Free Plan (20 items)"
+
+== Browse Available Plans ==
+
+User -> Client: Click "Upgrade Plan"
+Client -> Controller: GET /api/plans
+Controller -> PlanService: getAllActivePlans()
+PlanService -> DB: SELECT * FROM service_plans\nWHERE is_active = true
+DB --> PlanService: List<ServicePlan>
+PlanService -> PlanService: Load limits for each plan
+PlanService --> Controller: List<ServicePlanDTO>
+Controller --> Client: Available Plans
+Client --> User: Display plans:\n- Free ($0)\n- Usual ($4.99) ← Current\n- Premium ($9.99) ← Upgrade
+
+== Upgrade to Premium ==
+
+User -> Client: Select Premium Plan
+Client -> Controller: PUT /api/users/me/plan\n{planId: 3}
+Controller -> UserService: upgradePlan(userId, newPlanId)
+
+UserService -> UserRepo: findById(userId)
+UserRepo -> DB: SELECT * FROM users\nWHERE id = userId
+DB --> UserRepo: User
+UserRepo --> UserService: User
+
+UserService -> PlanService: getPlanById(newPlanId)
+PlanService -> DB: SELECT * FROM service_plans\nWHERE id = newPlanId
+DB --> PlanService: ServicePlan
+PlanService --> UserService: ServicePlan (Premium)
+
+UserService -> PlanService: getPlanLimits(newPlanId)
+PlanService -> DB: SELECT * FROM plan_limits\nWHERE plan_id = newPlanId
+DB --> PlanService: PlanLimits
+PlanService --> UserService: PlanLimits
+
+UserService -> UserService: Check if user has\n200+ vault items
+UserService -> DB: SELECT COUNT(*) FROM vault_items\nWHERE user_id = ?
+DB --> UserService: Item Count (e.g., 250)
+
+alt Item Count > New Plan Limits
+    UserService -> UserService: **VALIDATION FAILED**
+    UserService --> Controller: 400 Bad Request\n"Cannot downgrade: You have 250 items,\nPremium allows 2000 (OK)\nBut if downgrading to Usual (200), would fail"
+    Controller --> Client: Error
+    Client --> User: Show error message
+else Item Count <= New Plan Limits OR Upgrading
+    UserService -> UserRepo: updateUserPlan(userId, newPlanId)
+    UserRepo -> DB: UPDATE users\nSET service_plan_id = ?\nWHERE id = ?
+    DB --> UserRepo: Updated
+    UserRepo --> UserService: User
+    UserService --> Controller: UserDTO with new plan
+    Controller --> Client: Plan Updated
+    Client --> User: "Successfully upgraded to Premium!"
+    Client -> Client: Refresh vault limits display
+end
+
+== Downgrade Protection ==
+
+note over UserService
+  **Business Rules:**
+  
+  1. Upgrade: Always allowed
+  2. Downgrade: Check if current
+     vault items <= new plan limit
+  
+  Example:
+  - User has 250 items
+  - Current: Premium (2000 limit)
+  - Downgrade to Usual (200 limit) → ❌ DENIED
+  - Downgrade to Free (20 limit) → ❌ DENIED
+end note
+
+@enduml
+

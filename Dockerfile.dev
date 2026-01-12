@@ -1,0 +1,14 @@
+# Development Dockerfile - builds on container start
+FROM maven:3.9-eclipse-temurin-21
+
+WORKDIR /app
+
+# Copy project files
+COPY . .
+
+# Expose application port and debug port
+EXPOSE 8080 5005
+
+# Command to build and run on container start
+CMD ["sh", "-c", "mvn clean package -DskipTests && java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar target/*.jar"]
+

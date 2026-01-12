@@ -1,0 +1,117 @@
+@startuml Database Schema - Password Vault
+
+!theme plain
+skinparam linetype ortho
+skinparam packageStyle rectangle
+
+entity "service_plans" as service_plans {
+  * id : BIGSERIAL <<PK>>
+  --
+  * name : VARCHAR(50) <<UNIQUE>>
+  * price : DECIMAL(10,2)
+  * currency : VARCHAR(3)
+  * is_active : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "plan_limits" as plan_limits {
+  * id : BIGSERIAL <<PK>>
+  --
+  * plan_id : BIGINT <<FK>>
+  * max_vault_items : INTEGER
+  * max_password_length : INTEGER
+  * can_export : BOOLEAN
+  * can_import : BOOLEAN
+  * can_share : BOOLEAN
+  * max_history_versions : INTEGER
+  * can_attachments : BOOLEAN
+  * max_devices : INTEGER
+  * exclude_ambiguous : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "users" as users {
+  * id : BIGSERIAL <<PK>>
+  --
+  * username : VARCHAR(100) <<UNIQUE>>
+  * email : VARCHAR(255) <<UNIQUE>>
+  * password_hash : VARCHAR(255)
+  * service_plan_id : BIGINT <<FK>>
+  * is_active : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "vault_items" as vault_items {
+  * id : BIGSERIAL <<PK>>
+  --
+  * user_id : BIGINT <<FK>>
+  * title : VARCHAR(255)
+  * username : VARCHAR(255)
+  * encrypted_password : TEXT
+  * password_iv : VARCHAR(255)
+  * password_salt : VARCHAR(255)
+  * url : VARCHAR(500)
+  * notes : TEXT
+  * folder : VARCHAR(100)
+  * tags : VARCHAR(255)
+  * is_favorite : BOOLEAN
+  * created_at : TIMESTAMP
+  * updated_at : TIMESTAMP
+}
+
+entity "password_history" as password_history {
+  * id : BIGSERIAL <<PK>>
+  --
+  * vault_item_id : BIGINT <<FK>>
+  * encrypted_password : TEXT
+  * password_iv : VARCHAR(255)
+  * password_salt : VARCHAR(255)
+  * created_at : TIMESTAMP
+}
+
+entity "shared_vault_items" as shared_vault_items {
+  * id : BIGSERIAL <<PK>>
+  --
+  * vault_item_id : BIGINT <<FK>>
+  * shared_by_user_id : BIGINT <<FK>>
+  * shared_with_user_id : BIGINT <<FK>>
+  * can_edit : BOOLEAN
+  * created_at : TIMESTAMP
+}
+
+' Relationships
+service_plans ||--|| plan_limits : "has"
+service_plans ||--o{ users : "subscribed to"
+users ||--o{ vault_items : "owns"
+vault_items ||--o{ password_history : "has history"
+vault_items ||--o{ shared_vault_items : "shared as"
+users ||--o{ shared_vault_items : "shared by"
+users ||--o{ shared_vault_items : "shared with"
+
+note right of service_plans
+  **Service Plans:**
+  - Free (0.00 USD)
+  - Usual (4.99 USD)
+  - Premium (9.99 USD)
+end note
+
+note right of plan_limits
+  **Limits Examples:**
+  Free: 20 items, 16 chars, no export
+  Usual: 200 items, 32 chars, export OK
+  Premium: 2000 items, 64 chars, all features
+end note
+
+note bottom of vault_items
+  **Encryption:**
+  Password stored encrypted with:
+  - encrypted_password (AES encrypted)
+  - password_iv (Initialization Vector)
+  - password_salt (Salt for key derivation)
+end note
+
+@enduml
+

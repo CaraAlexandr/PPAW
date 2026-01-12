@@ -1,0 +1,126 @@
+@startuml System Architecture - Password Vault
+
+!theme plain
+skinparam component {
+  BackgroundColor #LightBlue
+  BorderColor #DarkBlue
+  ArrowColor #DarkBlue
+}
+skinparam package {
+  BackgroundColor #White
+  BorderColor #DarkBlue
+}
+
+package "Client Layer" {
+  component [Web Client] as WebClient
+  component [Mobile App] as MobileApp
+}
+
+package "Presentation Layer (Controllers)" {
+  component [AuthController] as AuthController
+  component [ServicePlansController] as PlansController
+  component [VaultController] as VaultController
+  component [PasswordGeneratorController] as PasswordController
+  component [UserController] as UserController
+}
+
+package "Service Layer" {
+  component [UserService] as UserService
+  component [PlanService] as PlanService
+  component [VaultService] as VaultService
+  component [PasswordGeneratorService] as PasswordService
+  component [EncryptionService] as EncryptionService
+  component [AuditService] as AuditService
+}
+
+package "Data Access Layer" {
+  component [UserRepository] as UserRepo
+  component [ServicePlanRepository] as PlanRepo
+  component [PlanLimitsRepository] as LimitsRepo
+  component [VaultItemRepository] as VaultRepo
+  component [PasswordHistoryRepository] as HistoryRepo
+  component [SharedVaultItemRepository] as SharedRepo
+}
+
+database "PostgreSQL Database" as DB {
+  component [service_plans]
+  component [plan_limits]
+  component [users]
+  component [vault_items]
+  component [password_history]
+  component [shared_vault_items]
+}
+
+' Client to Presentation
+WebClient --> AuthController
+WebClient --> PlansController
+WebClient --> VaultController
+WebClient --> PasswordController
+WebClient --> UserController
+
+MobileApp --> AuthController
+MobileApp --> PlansController
+MobileApp --> VaultController
+MobileApp --> PasswordController
+MobileApp --> UserController
+
+' Presentation to Service
+AuthController --> UserService
+PlansController --> PlanService
+VaultController --> VaultService
+VaultController --> PlanService
+PasswordController --> PasswordService
+PasswordController --> PlanService
+UserController --> UserService
+UserController --> PlanService
+
+' Service Layer interactions
+VaultService --> EncryptionService
+VaultService --> PlanService
+VaultService --> AuditService
+PasswordService --> PlanService
+UserService --> PlanService
+
+' Service to Data Access
+UserService --> UserRepo
+PlanService --> PlanRepo
+PlanService --> LimitsRepo
+VaultService --> VaultRepo
+VaultService --> HistoryRepo
+VaultService --> SharedRepo
+
+' Data Access to Database
+UserRepo --> DB
+PlanRepo --> DB
+LimitsRepo --> DB
+VaultRepo --> DB
+HistoryRepo --> DB
+SharedRepo --> DB
+
+note right of VaultService
+  **Business Logic:**
+  - Plan validation
+  - Limit enforcement
+  - Password generation rules
+  - Encryption/Decryption
+  - Audit checks
+end note
+
+note right of UserRepo
+  **Repository Pattern:**
+  - JPA Repositories
+  - Database abstraction
+  - Query optimization
+end note
+
+note right of DB
+  **Flyway Migrations:**
+  - V1: Service Plans & Limits
+  - V2: Users
+  - V3: Vault Items
+  - V4: Password History
+  - V5: Shared Items
+  - V6: Seed Data
+end note
+
+@enduml
