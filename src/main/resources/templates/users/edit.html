@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+<head>
+    <title>Editare Utilizator</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- Breadcrumb -->
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a th:href="@{/users}">Utilizatori</a></li>
+                            <li class="breadcrumb-item"><a th:href="@{/users/{id}(id=${user.id})}" th:text="${user.username}">Utilizator</a></li>
+                            <li class="breadcrumb-item active">Editare</li>
+                        </ol>
+                    </nav>
+
+                    <!-- Card formular -->
+                    <div class="card-modern">
+                        <div class="card-header bg-transparent border-0 p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-1 fw-bold">
+                                        <i class="bi bi-pencil-square me-2 text-warning"></i>Editare Utilizator
+                                    </h3>
+                                    <p class="text-muted mb-0">Modifică informațiile utilizatorului: <strong th:text="${user.username}"></strong></p>
+                                </div>
+                                <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-secondary btn-modern">
+                                    <i class="bi bi-arrow-left me-2"></i>Înapoi
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Mesaj eroare -->
+                        <div th:if="${errorMessage}" class="alert alert-danger alert-modern mx-4 mt-3 mb-0">
+                            <i class="bi bi-exclamation-circle me-2"></i><span th:text="${errorMessage}"></span>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <form th:action="@{/users/{id}/edit(id=${user.id})}" th:object="${user}" method="post">
+                                <!-- ID hidden -->
+                                <input type="hidden" th:field="*{id}">
+
+                                <div class="row g-4">
+                                    <!-- Username -->
+                                    <div class="col-md-6">
+                                        <label for="username" class="form-label fw-bold">
+                                            <i class="bi bi-person me-1"></i>Username <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control form-control-modern" 
+                                               id="username" 
+                                               th:field="*{username}" 
+                                               th:classappend="${#fields.hasErrors('username')} ? 'is-invalid'">
+                                        <div th:if="${#fields.hasErrors('username')}" class="invalid-feedback">
+                                            <span th:errors="*{username}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Email -->
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label fw-bold">
+                                            <i class="bi bi-envelope me-1"></i>Email <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" 
+                                               class="form-control form-control-modern" 
+                                               id="email" 
+                                               th:field="*{email}" 
+                                               th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'">
+                                        <div th:if="${#fields.hasErrors('email')}" class="invalid-feedback">
+                                            <span th:errors="*{email}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Password (opțional) -->
+                                    <div class="col-md-6">
+                                        <label for="password" class="form-label fw-bold">
+                                            <i class="bi bi-lock me-1"></i>Parolă Nouă
+                                        </label>
+                                        <input type="password" 
+                                               class="form-control form-control-modern" 
+                                               id="password" 
+                                               th:field="*{password}" 
+                                               placeholder="Lăsați gol pentru a păstra parola actuală"
+                                               th:classappend="${#fields.hasErrors('password')} ? 'is-invalid'">
+                                        <div th:if="${#fields.hasErrors('password')}" class="invalid-feedback">
+                                            <span th:errors="*{password}"></span>
+                                        </div>
+                                        <small class="text-muted">
+                                            <i class="bi bi-info-circle me-1"></i>Lăsați gol pentru a păstra parola actuală
+                                        </small>
+                                    </div>
+
+                                    <!-- Service Plan -->
+                                    <div class="col-md-6">
+                                        <label for="servicePlanId" class="form-label fw-bold">
+                                            <i class="bi bi-award me-1"></i>Plan de Servicii <span class="text-danger">*</span>
+                                        </label>
+                                        <select class="form-select form-control-modern" 
+                                                id="servicePlanId" 
+                                                th:field="*{servicePlanId}"
+                                                th:classappend="${#fields.hasErrors('servicePlanId')} ? 'is-invalid'">
+                                            <option value="">Selectează planul</option>
+                                            <option th:each="plan : ${servicePlans}" 
+                                                    th:value="${plan.id}" 
+                                                    th:text="${plan.name + ' - $' + plan.price}"
+                                                    th:selected="${plan.id == user.servicePlanId}">
+                                            </option>
+                                        </select>
+                                        <div th:if="${#fields.hasErrors('servicePlanId')}" class="invalid-feedback">
+                                            <span th:errors="*{servicePlanId}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Checkbox Activ -->
+                                    <div class="col-md-12">
+                                        <div class="form-check form-switch p-3 rounded" style="background: #f8fafc;">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="isActive" 
+                                                   th:field="*{isActive}"
+                                                   style="width: 50px; height: 25px; cursor: pointer;">
+                                            <label class="form-check-label ms-3 fw-bold" for="isActive">
+                                                <i class="bi bi-toggle-on me-1"></i>Cont Activ
+                                            </label>
+                                            <small class="d-block text-muted ms-5 mt-1">
+                                                Dezactivează pentru a bloca accesul utilizatorului
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Informații suplimentare -->
+                                <div class="alert alert-info alert-modern mt-4">
+                                    <h6 class="alert-heading">
+                                        <i class="bi bi-info-circle me-2"></i>Informații Utilizator
+                                    </h6>
+                                    <div class="row g-3 mt-2">
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Autentificări totale:</small>
+                                            <strong th:text="${user.loginCount ?: 0}"></strong>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted d-block">Ultim login:</small>
+                                            <strong th:text="${user.lastLoginAt ?: 'Niciodată'}"></strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Butoane -->
+                                <div class="d-flex justify-content-end gap-2 mt-4 pt-4 border-top">
+                                    <a th:href="@{/users/{id}(id=${user.id})}" class="btn btn-secondary btn-modern">
+                                        <i class="bi bi-x-circle me-2"></i>Anulează
+                                    </a>
+                                    <button type="submit" class="btn btn-warning btn-modern">
+                                        <i class="bi bi-check-circle me-2"></i>Salvează Modificările
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

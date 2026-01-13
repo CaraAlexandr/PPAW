@@ -5,45 +5,46 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.Index;
-
+/**
+ * Entitate Company pentru Laboratorul 5 - MVC
+ * Echivalent Model/Entity din ASP.NET MVC
+ */
 @Entity
-@Table(name = "service_plans", schema = "vault_schema", indexes = {
-    @Index(name = "idx_service_plans_active", columnList = "is_active")
-})
+@Table(name = "companies", schema = "vault_schema")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ServicePlan {
+public class Company {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(nullable = false, length = 100)
     private String name;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(length = 255)
+    private String description;
 
-    // MODIFICARE TIP DATE: de la VARCHAR(3) la VARCHAR(10) pentru a suporta coduri monede mai lungi
-    @Column(nullable = false, length = 10)
-    private String currency = "USD";
+    @Column(nullable = false, length = 50)
+    private String country; // Câmp select
 
     @Column(nullable = false)
-    private Boolean isActive = true;
+    private Boolean isActive = true; // Checkbox
+
+    @Column(length = 100)
+    private String email;
+
+    @Column(length = 20)
+    private String phone;
 
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
-
-    @OneToOne(mappedBy = "servicePlan", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private PlanLimits planLimits;
 
     @PrePersist
     protected void onCreate() {
@@ -56,4 +57,5 @@ public class ServicePlan {
         updatedAt = LocalDateTime.now();
     }
 }
+
 

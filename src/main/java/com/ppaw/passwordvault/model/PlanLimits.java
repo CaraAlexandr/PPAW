@@ -8,7 +8,9 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "plan_limits")
+@Table(name = "plan_limits", schema = "vault_schema", indexes = {
+    @Index(name = "idx_plan_limits_plan_id", columnList = "plan_id")
+})
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

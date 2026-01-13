@@ -8,8 +8,12 @@ import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "shared_vault_items", 
-       uniqueConstraints = @UniqueConstraint(columnNames = {"vault_item_id", "shared_with_user_id"}))
+@Table(name = "shared_vault_items", schema = "vault_schema",
+       uniqueConstraints = @UniqueConstraint(columnNames = {"vault_item_id", "shared_with_user_id"}),
+       indexes = {
+           @Index(name = "idx_shared_vault_items_shared_with", columnList = "shared_with_user_id"),
+           @Index(name = "idx_shared_vault_items_vault_item", columnList = "vault_item_id")
+       })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
