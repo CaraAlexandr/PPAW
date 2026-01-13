@@ -1,5 +1,7 @@
 package com.ppaw.passwordvault.service;
 
+import com.ppaw.passwordvault.dto.LoginRequestDTO;
+import com.ppaw.passwordvault.dto.LoginResponseDTO;
 import com.ppaw.passwordvault.dto.UserCreateDTO;
 import com.ppaw.passwordvault.dto.UserDTO;
 import com.ppaw.passwordvault.dto.UserUpdateDTO;
@@ -113,15 +115,37 @@ public class UserService {
         auditLogService.logAction(id, "USER_DELETED", "User account deleted", null);
     }
 
-    public void recordLogin(Long userId, String ipAddress) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User", userId));
-        
+    public LoginResponseDTO login(LoginRequestDTO loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new ValidationException("Invalid username or password"));
+
+        if (!user.getIsActive()) {
+            throw new ValidationException("User account is inactive");
+        }
+
+        String hashedPassword = hashPassword(loginRequest.getPassword());
+        if (!user.getPasswordHash().equals(hashedPassword)) {
+            throw new ValidationException("Invalid username or password");
+        }
+
+        // Actualizează login count și last login
         user.setLastLoginAt(java.time.LocalDateTime.now());
         user.setLoginCount((user.getLoginCount() != null ? user.getLoginCount() : 0) + 1);
         userRepository.save(user);
-        
-        auditLogService.logAction(userId, "LOGIN", "User logged in", ipAddress);
+
+        // Audit log
+        auditLogService.logAction(user.getId(), "LOGIN", "User logged in", null);
+
+        return LoginResponseDTO.builder()
+                .userId(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .servicePlanId(user.getServicePlan() != null ? user.getServicePlan().getId() : null)
+                .servicePlanName(user.getServicePlan() != null ? user.getServicePlan().getName() : null)
+                .lastLoginAt(user.getLastLoginAt())
+                .loginCount(user.getLoginCount())
+                .success(true)
+                .build();
     }
 
     private UserDTO toDTO(User user) {

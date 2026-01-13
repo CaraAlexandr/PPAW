@@ -52,13 +52,5 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     }
-
-    @PostMapping("/{id}/login")
-    public ResponseEntity<ApiResponse<Void>> recordLogin(
-            @PathVariable Long id,
-            @RequestParam(required = false) String ipAddress) {
-        userService.recordLogin(id, ipAddress);
-        return ResponseEntity.ok(ApiResponse.success("Login recorded successfully", null));
-    }
 }
 

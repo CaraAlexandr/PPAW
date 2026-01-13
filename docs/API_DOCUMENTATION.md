@@ -14,6 +14,43 @@ http://localhost:8080/swagger-ui.html
 
 ## Endpoints
 
+### Authentication
+
+#### POST `/api/auth/login`
+Autentificare utilizator cu username și parolă.
+
+**Request Body:**
+```json
+{
+  "username": "john_doe",
+  "password": "password123"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "userId": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "servicePlanId": 1,
+    "servicePlanName": "Free",
+    "lastLoginAt": "2024-12-01T10:00:00",
+    "loginCount": 5,
+    "success": true
+  }
+}
+```
+
+**Errors:**
+- `400`: Invalid username or password
+- `400`: User account is inactive
+
+---
+
 ### Health Check
 
 #### GET `/api/health`
@@ -157,12 +194,6 @@ Actualizează un utilizator.
 
 #### DELETE `/api/users/{id}`
 Șterge un utilizator.
-
-#### POST `/api/users/{id}/login`
-Înregistrează o autentificare pentru un utilizator.
-
-**Query Parameters:**
-- `ipAddress` (optional): IP-ul utilizatorului
 
 ---
 
@@ -347,6 +378,16 @@ GET /api/audit-logs/date-range?start=2024-12-01T00:00:00&end=2024-12-01T23:59:59
 ## Testing Examples
 
 ### cURL Examples
+
+#### Login
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test_user",
+    "password": "password123"
+  }'
+```
 
 #### Create User
 ```bash

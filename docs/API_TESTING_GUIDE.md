@@ -2,6 +2,19 @@
 
 ## Quick Start
 
+### Test Login Rapid
+```bash
+# Mai întâi creează un user
+curl -X POST http://localhost:8080/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","email":"test@test.com","password":"pass123","servicePlanId":1}'
+
+# Apoi login
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"test","password":"pass123"}'
+```
+
 ### 1. Pornește aplicația
 ```bash
 mvn spring-boot:run
@@ -55,7 +68,17 @@ curl http://localhost:8080/api/users
 curl http://localhost:8080/api/users/1
 ```
 
-### Pasul 6: Actualizează Utilizator
+### Pasul 6: Login (Autentificare)
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test_user",
+    "password": "password123"
+  }'
+```
+
+### Pasul 7: Actualizează Utilizator
 ```bash
 curl -X PUT http://localhost:8080/api/users/1 \
   -H "Content-Type: application/json" \
@@ -63,11 +86,6 @@ curl -X PUT http://localhost:8080/api/users/1 \
     "username": "updated_user",
     "isActive": true
   }'
-```
-
-### Pasul 7: Înregistrează Login
-```bash
-curl -X POST "http://localhost:8080/api/users/1/login?ipAddress=192.168.1.1"
 ```
 
 ### Pasul 8: Creează Vault Item
@@ -148,6 +166,26 @@ curl -X POST http://localhost:8080/api/users \
 curl http://localhost:8080/api/users/999
 ```
 
+### Login Error - Credențiale invalide
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "test_user",
+    "password": "wrong_password"
+  }'
+```
+
+### Login Error - Utilizator inexistent
+```bash
+curl -X POST http://localhost:8080/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "nonexistent",
+    "password": "password123"
+  }'
+```
+
 ### Business Exception - Limită depășită
 Creează 21+ vault items pentru un utilizator cu plan Free (limita este 20):
 ```bash
@@ -222,7 +260,9 @@ LEFT JOIN vault_schema.plan_limits pl ON pl.plan_id = sp.id;
 - [ ] Utilizator nou se creează cu succes
 - [ ] Validările funcționează (username, email, password)
 - [ ] Utilizator se actualizează corect
+- [ ] Login funcționează cu username și parolă
 - [ ] Login se înregistrează în audit logs
+- [ ] Login actualizează login count și last login
 - [ ] Vault item se creează cu succes
 - [ ] Limitările planului sunt verificate
 - [ ] Vault items se listează corect
