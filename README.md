@@ -1,188 +1,191 @@
-# Password Vault Application
+# Aplicație Password Vault
 
-A Spring Boot application for password management with monetization plans (Free, Usual, Premium).
+Aplicație Spring Boot pentru gestionarea parolelor cu planuri de monetizare (Free, Usual, Premium).
 
-## Features
+## Fișier Principal
 
-- **Service Plans**: Free, Usual, and Premium plans with different limitations
-- **Password Vault**: Secure storage of encrypted passwords
-- **Password Generator**: Generate secure passwords based on plan limitations
-- **Database Migrations**: Flyway for version-controlled database schema
+Fișierul principal al aplicației este:
+- **`src/main/java/com/ppaw/passwordvault/PasswordVaultApplication.java`** - Punctul de intrare al aplicației Spring Boot
 
-## Technology Stack
+## Pornirea Aplicației
+
+Pentru a porni aplicația, rulează următoarea comandă în directorul curent (unde se află fișierul `docker-compose.yml`):
+
+```bash
+docker compose up
+```
+
+Această comandă va porni:
+1. Baza de date PostgreSQL pe portul `5432`
+2. Aplicația Spring Boot pe portul `8080`
+3. Portul de debug Java pe `5005`
+
+**Servicii disponibile:**
+- Aplicație: `http://localhost:8080`
+- Port Debug: `localhost:5005`
+- Baza de date: `localhost:5432`
+
+**Pentru a opri aplicația:**
+```bash
+docker compose down
+```
+
+## API-uri Disponibile
+
+### 1. Autentificare (`/api/auth`)
+
+- **POST `/api/auth/login`**
+  - Autentifică un utilizator în sistem
+  - Primește: username și parolă
+  - Returnează: token de autentificare și informații despre utilizator
+
+### 2. Utilizatori (`/api/users`)
+
+- **GET `/api/users`**
+  - Obține lista tuturor utilizatorilor
+
+- **GET `/api/users/{id}`**
+  - Obține detalii despre un utilizator specific
+
+- **POST `/api/users`**
+  - Creează un nou utilizator în sistem
+
+- **PUT `/api/users/{id}`**
+  - Actualizează informațiile unui utilizator existent
+
+- **DELETE `/api/users/{id}`**
+  - Șterge un utilizator din sistem
+
+### 3. Elemente Seif (`/api/users/{userId}/vault-items`)
+
+- **GET `/api/users/{userId}/vault-items`**
+  - Obține toate elementele din seif pentru un utilizator
+  - Parametru opțional: `favorite=true` pentru a obține doar elementele favorite
+
+- **GET `/api/users/{userId}/vault-items/{id}`**
+  - Obține un element specific din seif
+
+- **POST `/api/users/{userId}/vault-items`**
+  - Creează un nou element în seif (parolă criptată)
+
+- **PUT `/api/users/{userId}/vault-items/{id}`**
+  - Actualizează un element din seif
+
+- **DELETE `/api/users/{userId}/vault-items/{id}`**
+  - Șterge un element din seif
+
+- **GET `/api/users/{userId}/vault-items/favorites`**
+  - Obține doar elementele marcate ca favorite
+
+### 4. Planuri de Serviciu (`/api/service-plans`)
+
+- **GET `/api/service-plans`**
+  - Obține lista tuturor planurilor de serviciu
+  - Parametru opțional: `active=true` pentru a obține doar planurile active
+
+- **GET `/api/service-plans/{id}`**
+  - Obține detalii despre un plan de serviciu specific
+
+- **GET `/api/service-plans/{id}/with-limits`**
+  - Obține un plan de serviciu împreună cu limitele sale (număr maxim de elemente, lungime parolă, etc.)
+
+### 5. Statistici (`/api/stats`)
+
+- **GET `/api/stats`**
+  - Obține statistici generale despre aplicație
+  - Returnează: numărul total de utilizatori, planuri, elemente din seif, log-uri de audit
+
+### 6. Health Check (`/api/health`)
+
+- **GET `/api/health`**
+  - Verifică starea aplicației
+  - Returnează: status aplicație, timestamp, nume aplicație
+
+### 7. Log-uri de Audit (`/api/audit-logs`)
+
+- **GET `/api/audit-logs/user/{userId}`**
+  - Obține toate log-urile de audit pentru un utilizator specific
+
+- **GET `/api/audit-logs/action/{action}`**
+  - Obține log-urile de audit pentru o acțiune specifică (ex: CREATE, UPDATE, DELETE)
+
+- **GET `/api/audit-logs/{id}`**
+  - Obține un log de audit specific
+
+- **GET `/api/audit-logs/date-range`**
+  - Obține log-urile de audit dintr-un interval de date
+  - Parametri: `start` și `end` (format ISO DateTime)
+
+### 8. Interfețe Web (MVC)
+
+Aplicația include și interfețe web pentru administrare:
+
+- **GET `/companies`** - Listă companii
+- **GET `/companies/{id}`** - Detalii companie
+- **GET `/companies/create`** - Formular creare companie
+- **POST `/companies/create`** - Salvare companie nouă
+- **GET `/companies/{id}/edit`** - Formular editare companie
+- **POST `/companies/{id}/edit`** - Salvare modificări companie
+- **POST `/companies/{id}/delete`** - Ștergere companie
+
+- **GET `/users`** - Listă utilizatori (admin)
+- **GET `/users/{id}`** - Detalii utilizator
+- **GET `/users/create`** - Formular creare utilizator
+- **POST `/users/create`** - Salvare utilizator nou
+- **GET `/users/{id}/edit`** - Formular editare utilizator
+- **POST `/users/{id}/edit`** - Salvare modificări utilizator
+- **POST `/users/{id}/delete`** - Ștergere utilizator
+
+- **GET `/employees`** - Listă angajați
+- **GET `/employees/create`** - Formular creare angajat
+- **POST `/employees/create`** - Salvare angajat nou
+
+## Funcționalități
+
+- **Planuri de Serviciu**: Planuri Free, Usual și Premium cu limitări diferite
+- **Seif Parole**: Stocare securizată a parolelor criptate
+- **Generator Parole**: Generare parole securizate bazată pe limitările planului
+- **Migrări Baze de Date**: Flyway pentru schema bazei de date controlată prin versiuni
+
+## Tehnologii
 
 - Java 21
 - Spring Boot 3.2.0
 - PostgreSQL 16
-- Flyway (Database migrations)
+- Flyway (Migrări baze de date)
 - JPA/Hibernate
 
-## Prerequisites
+## Cerințe
 
-- Java 21 or higher
+- Java 21 sau mai nou
 - Maven 3.6+
-- Docker and Docker Compose
+- Docker și Docker Compose
 
-## Getting Started
+## Documentație API
 
-### Option 1: Docker Compose (Recommended)
+Documentația completă a API-urilor este disponibilă la:
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- API Docs: `http://localhost:8080/api-docs`
 
-The easiest way to run the entire application is using Docker Compose. This will start both PostgreSQL and the Spring Boot application:
-
-```bash
-docker-compose up --build
-```
-
-This will:
-1. Start PostgreSQL database on port `5432`
-2. Build and start the Spring Boot application on port `8080`
-3. Enable Java debug port on `5005`
-
-**Note:** The application is configured to build on container start using `Dockerfile.dev`, which runs:
-```bash
-mvn clean package -DskipTests && java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005 -jar target/*.jar
-```
-
-**Services:**
-- Application: `http://localhost:8080`
-- Debug Port: `localhost:5005`
-- Database: `localhost:5432`
-
-**To run in detached mode:**
-```bash
-docker-compose up -d --build
-```
-
-**To view logs:**
-```bash
-docker-compose logs -f app
-```
-
-**To stop:**
-```bash
-docker-compose down
-```
-
-### Option 2: Local Development
-
-#### 1. Start PostgreSQL Database
-
-```bash
-docker-compose up -d postgres
-```
-
-This will start a PostgreSQL container on port 5432 with:
-- Database: `password_vault`
-- Username: `postgres`
-- Password: `postgres`
-
-#### 2. Run the Application Locally
-
-```bash
-mvn clean install
-mvn spring-boot:run
-```
-
-The application will start on `http://localhost:8080`
-
-### Debugging
-
-The application exposes JDWP debug port `5005` when running in Docker. To connect a debugger:
-
-**IntelliJ IDEA:**
-1. Run → Edit Configurations → Add New → Remote JVM Debug
-2. Host: `localhost`, Port: `5005`
-3. Debug mode: `Attach`
-
-**VS Code:**
-```json
-{
-  "type": "java",
-  "name": "Debug Spring Boot",
-  "request": "attach",
-  "hostName": "localhost",
-  "port": 5005
-}
-```
-
-### 3. Database Schema
-
-**Code-First Approach**: The database schema is automatically generated from JPA entities on application startup using Hibernate.
-
-- **Schema Creation**: Hibernate will create/update tables based on `@Entity` classes
-- **Initial Data**: Service plans (Free, Usual, Premium) are automatically seeded via `DataInitializer`
-- **Configuration**: Set `spring.jpa.hibernate.ddl-auto=update` in `application.properties`
-
-**Note**: Flyway migrations are disabled. Old migration files in `db/migration/` are kept for reference only.
-
-## Database Schema
-
-### Service Plans
-
-The application comes pre-configured with three plans:
-
-- **Free**: 20 vault items, max 16 char passwords, no export/import/share
-- **Usual**: 200 vault items, max 32 char passwords, export enabled, 3 history versions
-- **Premium**: 2000 vault items, max 64 char passwords, all features enabled
-
-### Entity Models
-
-- `ServicePlan`: Service plan definitions
-- `PlanLimits`: Limitations per plan
-- `User`: User accounts linked to plans
-- `VaultItem`: Encrypted password entries
-- `PasswordHistory`: Historical password versions
-- `SharedVaultItem`: Shared vault items (Premium feature)
-
-## Docker Files
-
-- **Dockerfile**: Production-ready multi-stage build
-- **Dockerfile.dev**: Development build that compiles on container start
-- **docker-compose.yml**: Orchestrates PostgreSQL and Spring Boot services
-
-## Project Structure
+## Structură Proiect
 
 ```
 .
 ├── src/
 │   ├── main/
 │   │   ├── java/com/ppaw/passwordvault/
-│   │   │   ├── PasswordVaultApplication.java
-│   │   │   └── model/
-│   │   │       ├── ServicePlan.java
-│   │   │       ├── PlanLimits.java
-│   │   │       ├── User.java
-│   │   │       ├── VaultItem.java
-│   │   │       ├── PasswordHistory.java
-│   │   │       └── SharedVaultItem.java
+│   │   │   ├── PasswordVaultApplication.java  (Fișier principal)
+│   │   │   ├── controller/                    (API REST)
+│   │   │   ├── controller/mvc/                (Controlere MVC pentru interfețe web)
+│   │   │   ├── service/                       (Logica de business)
+│   │   │   ├── repository/                    (Acces la bază de date)
+│   │   │   ├── model/                         (Entități JPA)
+│   │   │   └── dto/                           (Obiecte de transfer)
 │   │   └── resources/
 │   │       ├── application.properties
-│   │       └── db/migration/
-│   │           ├── V1__Create_service_plans_table.sql
-│   │           ├── V2__Create_users_table.sql
-│   │           ├── V3__Create_vault_items_table.sql
-│   │           ├── V4__Create_password_history_table.sql
-│   │           ├── V5__Create_shared_vault_items_table.sql
-│   │           └── V6__Seed_initial_plans.sql
-├── docs/
-│   ├── database-schema.puml
-│   ├── user-plan-limitation-flow.puml
-│   └── ... (other PlantUML diagrams)
+│   │       └── templates/                     (Template-uri Thymeleaf)
+├── docker-compose.yml
 ├── Dockerfile
 ├── Dockerfile.dev
-├── docker-compose.yml
 └── pom.xml
 ```
-
-## Next Steps
-
-- Implement service layer (PasswordGeneratorService, VaultService, PlanService)
-- Create REST controllers for API endpoints
-- Add authentication and authorization
-- Implement password encryption/decryption logic
-- Add validation and business rules
-
-## Database Connection
-
-The application is configured to connect to PostgreSQL. Update `src/main/resources/application.properties` if you need different connection settings.
-
