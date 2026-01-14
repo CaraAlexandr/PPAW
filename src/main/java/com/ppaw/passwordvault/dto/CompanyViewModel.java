@@ -7,6 +7,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * CompanyViewModel - DTO pentru form-uri
  * Echivalent CompanyViewModel din ASP.NET MVC
@@ -37,6 +40,10 @@ public class CompanyViewModel {
 
     @Size(max = 20, message = "Telefonul nu poate depăși 20 de caractere")
     private String phone;
+    
+    // Informații despre angajați (pentru afișare)
+    private Long employeeCount = 0L;
+    private List<EmployeeViewModel> employees = new ArrayList<>();
 }
 
 

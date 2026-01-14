@@ -22,3 +22,4 @@ COMMENT ON COLUMN vault_schema.companies.country IS 'Țara companiei (câmp sele
 COMMENT ON COLUMN vault_schema.companies.is_active IS 'Status activ/inactiv (checkbox)';
 
 
+

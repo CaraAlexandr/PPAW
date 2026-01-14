@@ -29,13 +29,14 @@
                         <th>Țară</th>
                         <th>Email</th>
                         <th>Telefon</th>
+                        <th>Angajați</th>
                         <th>Activ</th>
                         <th>Acțiuni</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr th:if="${companies == null or companies.isEmpty()}">
-                        <td colspan="7" class="text-center">Nu există companii în baza de date.</td>
+                        <td colspan="8" class="text-center">Nu există companii în baza de date.</td>
                     </tr>
                     <tr th:each="company : ${companies}">
                         <td th:text="${company.id}"></td>
@@ -43,6 +44,10 @@
                         <td th:text="${company.country}"></td>
                         <td th:text="${company.email ?: '-'}"></td>
                         <td th:text="${company.phone ?: '-'}"></td>
+                        <td>
+                            <span class="badge bg-info text-white" th:text="${company.employeeCount ?: 0} + ' angajați'">
+                            </span>
+                        </td>
                         <td>
                             <span class="badge" 
                                   th:classappend="${company.isActive} ? 'bg-success' : 'bg-secondary'"

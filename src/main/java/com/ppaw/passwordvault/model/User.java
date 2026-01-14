@@ -38,6 +38,10 @@ public class User {
     @Column(nullable = false)
     private Boolean isActive = true;
 
+    // Soft delete - marchează utilizatorul ca șters logic
+    @Column(nullable = false, name = "is_deleted")
+    private Boolean isDeleted = false;
+
     // NOUĂ PROPRIETATE 1: Data ultimei autentificări
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;

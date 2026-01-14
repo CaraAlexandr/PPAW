@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Entitate Company pentru Laboratorul 5 - MVC
@@ -45,6 +46,10 @@ public class Company {
 
     @Column(nullable = false)
     private LocalDateTime updatedAt;
+
+    // Relație One-to-Many cu Employee
+    @OneToMany(mappedBy = "company", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Employee> employees;
 
     @PrePersist
     protected void onCreate() {

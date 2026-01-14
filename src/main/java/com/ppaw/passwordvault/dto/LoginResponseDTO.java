@@ -15,8 +15,10 @@ public class LoginResponseDTO {
     private Long userId;
     private String username;
     private String email;
+    private String token; // LAB 8: Token for authentication
     private Long servicePlanId;
     private String servicePlanName;
+    private PlanLimitsDTO planLimits; // Subscription plan limits
     private LocalDateTime lastLoginAt;
     private Integer loginCount;
     private Boolean success;

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+<head>
+    <title>Administrare Angajați</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container-fluid">
+            <!-- Header cu statistici -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card text-center">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label opacity-75">Total Angajați</div>
+                                <div class="stat-number" th:text="${totalEmployees}">0</div>
+                            </div>
+                            <i class="bi bi-people-fill fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label opacity-75">Angajați Activi</div>
+                                <div class="stat-number" th:text="${activeEmployees}">0</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label opacity-75">Angajați Inactivi</div>
+                                <div class="stat-number" th:text="${inactiveEmployees}">0</div>
+                            </div>
+                            <i class="bi bi-x-circle-fill fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card principal -->
+            <div class="card-modern">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1 fw-bold">
+                                <i class="bi bi-people me-2 text-primary"></i>Lista Angajați
+                            </h3>
+                            <p class="text-muted mb-0">Gestionează toți angajații companiilor</p>
+                        </div>
+                        <a th:href="@{/employees/create}" class="btn btn-primary-modern btn-modern">
+                            <i class="bi bi-plus-circle me-2"></i>Adaugă Angajat Nou
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mesaje succes/eroare -->
+                <div th:if="${successMessage}" class="alert alert-success alert-modern mx-4 mt-3 mb-0">
+                    <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-modern mx-4 mt-3 mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i><span th:text="${errorMessage}"></span>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-modern table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-hash me-1"></i>ID</th>
+                                    <th><i class="bi bi-person me-1"></i>Nume Complet</th>
+                                    <th><i class="bi bi-envelope me-1"></i>Email</th>
+                                    <th><i class="bi bi-phone me-1"></i>Telefon</th>
+                                    <th><i class="bi bi-briefcase me-1"></i>Funcție</th>
+                                    <th><i class="bi bi-building me-1"></i>Companie</th>
+                                    <th><i class="bi bi-globe me-1"></i>Țară</th>
+                                    <th><i class="bi bi-toggle-on me-1"></i>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${employees == null or employees.isEmpty()}">
+                                    <td colspan="8" class="text-center py-5">
+                                        <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                                        <p class="text-muted">Nu există angajați în baza de date.</p>
+                                        <a th:href="@{/employees/create}" class="btn btn-primary-modern btn-modern">
+                                            <i class="bi bi-plus-circle me-2"></i>Adaugă Primul Angajat
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:each="employee : ${employees}">
+                                    <td>
+                                        <span class="badge bg-secondary" th:text="${employee.id}"></span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center"
+                                                 style="width: 40px; height: 40px; border-radius: 50%; font-weight: bold;"
+                                                 th:text="${#strings.substring(employee.firstName, 0, 1) + #strings.substring(employee.lastName, 0, 1)}">
+                                            </div>
+                                            <strong th:text="${employee.firstName + ' ' + employee.lastName}"></strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-envelope text-muted me-1"></i>
+                                        <span th:text="${employee.email}"></span>
+                                    </td>
+                                    <td>
+                                        <span th:text="${employee.phone ?: '-'}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info text-white" th:text="${employee.position ?: 'N/A'}"></span>
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-building text-muted me-1"></i>
+                                        <span th:text="${employee.companyName ?: 'N/A'}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark" th:text="${employee.companyCountry ?: '-'}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-modern"
+                                              th:classappend="${employee.isActive} ? 'bg-success' : 'bg-danger'"
+                                              th:text="${employee.isActive} ? 'Activ' : 'Inactiv'">
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+
