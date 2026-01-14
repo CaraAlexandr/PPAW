@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+<head>
+    <title>Detalii Plan de Servicii</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container-fluid">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/service-plans}">Planuri de Servicii</a></li>
+                    <li class="breadcrumb-item active" th:text="${plan.name}">Detalii</li>
+                </ol>
+            </nav>
+
+            <!-- Mesaj succes/eroare -->
+            <div th:if="${successMessage}" class="alert alert-success alert-modern alert-dismissible fade show">
+                <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger alert-modern alert-dismissible fade show">
+                <i class="bi bi-exclamation-circle me-2"></i><span th:text="${errorMessage}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div class="row">
+                <!-- Card principal cu detalii -->
+                <div class="col-lg-8">
+                    <div class="card-modern">
+                        <div class="card-header bg-transparent border-0 p-4">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-primary text-white me-3 d-flex align-items-center justify-content-center"
+                                         style="width: 70px; height: 70px; border-radius: 50%; font-size: 2rem; font-weight: bold;"
+                                         th:text="${#strings.substring(plan.name, 0, 2).toUpperCase()}">
+                                    </div>
+                                    <div>
+                                        <h3 class="mb-1 fw-bold" th:text="${plan.name}"></h3>
+                                        <p class="text-muted mb-0" th:text="${plan.currency + ' ' + plan.price}"></p>
+                                    </div>
+                                </div>
+                                <a th:href="@{/service-plans}" class="btn btn-secondary btn-modern">
+                                    <i class="bi bi-arrow-left me-2"></i>Înapoi
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-4">
+                                <!-- Informații de bază -->
+                                <div class="col-12">
+                                    <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Informații de Bază</h5>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-hash me-1"></i>ID Plan
+                                        </label>
+                                        <div class="fw-bold" th:text="${plan.id}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-toggle-on me-1"></i>Status
+                                        </label>
+                                        <div>
+                                            <span class="badge badge-modern fs-6"
+                                                  th:classappend="${plan.isActive} ? 'bg-success' : 'bg-danger'"
+                                                  th:text="${plan.isActive} ? 'Activ' : 'Inactiv'">
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-currency-dollar me-1"></i>Preț
+                                        </label>
+                                        <div class="fw-bold fs-5" th:text="${plan.currency + ' ' + plan.price}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-currency-exchange me-1"></i>Monedă
+                                        </label>
+                                        <div class="fw-bold" th:text="${plan.currency}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Limite -->
+                                <div class="col-12 mt-4">
+                                    <h5 class="mb-3"><i class="bi bi-sliders me-2"></i>Limite și Funcționalități</h5>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-box me-1"></i>Max Vault Items
+                                        </label>
+                                        <div class="fw-bold" th:text="${plan.maxVaultItems ?: 'N/A'}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-key me-1"></i>Max Password Length
+                                        </label>
+                                        <div class="fw-bold" th:text="${plan.maxPasswordLength ?: 'N/A'}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-clock-history me-1"></i>Max History Versions
+                                        </label>
+                                        <div class="fw-bold" th:text="${plan.maxHistoryVersions ?: 0}"></div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-1 d-block">
+                                            <i class="bi bi-devices me-1"></i>Max Devices
+                                        </label>
+                                        <div class="fw-bold" th:text="${plan.maxDevices ?: 1}"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Features -->
+                                <div class="col-12">
+                                    <div class="info-item p-3 rounded" style="background: #f8fafc;">
+                                        <label class="text-muted small mb-2 d-block">
+                                            <i class="bi bi-star me-1"></i>Funcționalități Disponibile
+                                        </label>
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            <span th:if="${plan.canExport}" class="badge bg-info">Export</span>
+                                            <span th:if="${plan.canImport}" class="badge bg-success">Import</span>
+                                            <span th:if="${plan.canShare}" class="badge bg-warning text-dark">Share</span>
+                                            <span th:if="${plan.canAttachments}" class="badge bg-secondary">Attachments</span>
+                                            <span th:if="${plan.excludeAmbiguous}" class="badge bg-primary">Exclude Ambiguous</span>
+                                            <span th:if="${!plan.canExport and !plan.canImport and !plan.canShare and !plan.canAttachments and !plan.excludeAmbiguous}" 
+                                                  class="text-muted">Nicio funcționalitate specială</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent border-0 p-4">
+                            <div class="d-flex gap-2">
+                                <a th:href="@{/service-plans/{id}/edit(id=${plan.id})}" class="btn btn-warning btn-modern">
+                                    <i class="bi bi-pencil me-2"></i>Editează Plan
+                                </a>
+                                <form th:action="@{/service-plans/{id}/delete(id=${plan.id})}" method="post" class="d-inline">
+                                    <button type="submit" 
+                                            class="btn btn-danger btn-modern"
+                                            onclick="return confirm('Sigur doriți să ștergeți planul \'' + '[[${plan.name}]]' + '\'?')">
+                                        <i class="bi bi-trash me-2"></i>Șterge Plan
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card sidebar cu statistici -->
+                <div class="col-lg-4">
+                    <div class="card-modern mb-4">
+                        <div class="card-header bg-transparent border-0 p-4">
+                            <h5 class="mb-0">
+                                <i class="bi bi-graph-up me-2 text-primary"></i>Informații Rapide
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                <div>
+                                    <div class="text-muted small">Status</div>
+                                    <div class="fw-bold">
+                                        <span class="badge badge-modern"
+                                              th:classappend="${plan.isActive} ? 'bg-success' : 'bg-danger'"
+                                              th:text="${plan.isActive} ? 'Plan Activ' : 'Plan Inactiv'">
+                                        </span>
+                                    </div>
+                                </div>
+                                <i class="bi bi-shield-check fs-3"
+                                   th:classappend="${plan.isActive} ? 'text-success' : 'text-danger'">
+                                </i>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                                <div>
+                                    <div class="text-muted small">Preț</div>
+                                    <div class="fw-bold fs-5" th:text="${plan.currency + ' ' + plan.price}"></div>
+                                </div>
+                                <i class="bi bi-currency-dollar fs-3 text-primary"></i>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="text-muted small">Max Items</div>
+                                    <div class="fw-bold fs-5" th:text="${plan.maxVaultItems ?: 'N/A'}"></div>
+                                </div>
+                                <i class="bi bi-box fs-3 text-info"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-modern">
+                        <div class="card-header bg-transparent border-0 p-4">
+                            <h5 class="mb-0">
+                                <i class="bi bi-lightning-charge me-2 text-warning"></i>Acțiuni Rapide
+                            </h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="d-grid gap-2">
+                                <a th:href="@{/service-plans/create}" class="btn btn-primary-modern btn-modern">
+                                    <i class="bi bi-plus-circle me-2"></i>Adaugă Plan Nou
+                                </a>
+                                <a th:href="@{/service-plans}" class="btn btn-outline-secondary btn-modern">
+                                    <i class="bi bi-list me-2"></i>Lista Planuri
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

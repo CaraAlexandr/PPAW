@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+<head>
+    <title>Administrare Planuri de Servicii</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container-fluid">
+            <!-- Header cu statistici -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="stat-card text-center">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label opacity-75">Total Planuri</div>
+                                <div class="stat-number" th:text="${totalPlans}">0</div>
+                            </div>
+                            <i class="bi bi-award fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label opacity-75">Planuri Active</div>
+                                <div class="stat-number" th:text="${activePlans}">0</div>
+                            </div>
+                            <i class="bi bi-check-circle-fill fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="stat-label opacity-75">Planuri Inactive</div>
+                                <div class="stat-number" th:text="${inactivePlans}">0</div>
+                            </div>
+                            <i class="bi bi-x-circle-fill fs-1 opacity-50"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card principal -->
+            <div class="card-modern">
+                <div class="card-header bg-transparent border-0 p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h3 class="mb-1 fw-bold">
+                                <i class="bi bi-award me-2 text-primary"></i>Lista Planuri de Servicii
+                            </h3>
+                            <p class="text-muted mb-0">Gestionează toate planurile de servicii disponibile</p>
+                        </div>
+                        <a th:href="@{/service-plans/create}" class="btn btn-primary-modern btn-modern">
+                            <i class="bi bi-plus-circle me-2"></i>Adaugă Plan Nou
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Mesaje succes/eroare -->
+                <div th:if="${successMessage}" class="alert alert-success alert-modern mx-4 mt-3 mb-0">
+                    <i class="bi bi-check-circle me-2"></i><span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-modern mx-4 mt-3 mb-0">
+                    <i class="bi bi-exclamation-circle me-2"></i><span th:text="${errorMessage}"></span>
+                </div>
+
+                <div class="card-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-modern table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-hash me-1"></i>ID</th>
+                                    <th><i class="bi bi-award me-1"></i>Nume Plan</th>
+                                    <th><i class="bi bi-currency-dollar me-1"></i>Preț</th>
+                                    <th><i class="bi bi-box me-1"></i>Max Vault Items</th>
+                                    <th><i class="bi bi-share me-1"></i>Features</th>
+                                    <th><i class="bi bi-toggle-on me-1"></i>Status</th>
+                                    <th class="text-center"><i class="bi bi-gear me-1"></i>Acțiuni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:if="${plans == null or plans.isEmpty()}">
+                                    <td colspan="7" class="text-center py-5">
+                                        <i class="bi bi-inbox fs-1 text-muted d-block mb-3"></i>
+                                        <p class="text-muted">Nu există planuri de servicii în baza de date.</p>
+                                        <a th:href="@{/service-plans/create}" class="btn btn-primary-modern btn-modern">
+                                            <i class="bi bi-plus-circle me-2"></i>Adaugă Primul Plan
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:each="plan : ${plans}">
+                                    <td>
+                                        <span class="badge bg-secondary" th:text="${plan.id}"></span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle bg-primary text-white me-2 d-flex align-items-center justify-content-center"
+                                                 style="width: 40px; height: 40px; border-radius: 50%; font-weight: bold;"
+                                                 th:text="${#strings.substring(plan.name, 0, 2).toUpperCase()}">
+                                            </div>
+                                            <strong th:text="${plan.name}"></strong>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="fw-bold" th:text="${plan.currency + ' ' + plan.price}"></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark" th:text="${plan.maxVaultItems ?: 'N/A'}"></span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1 flex-wrap">
+                                            <span th:if="${plan.canExport}" class="badge bg-info" title="Export">E</span>
+                                            <span th:if="${plan.canImport}" class="badge bg-success" title="Import">I</span>
+                                            <span th:if="${plan.canShare}" class="badge bg-warning text-dark" title="Share">S</span>
+                                            <span th:if="${plan.canAttachments}" class="badge bg-secondary" title="Attachments">A</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-modern"
+                                              th:classappend="${plan.isActive} ? 'bg-success' : 'bg-danger'"
+                                              th:text="${plan.isActive} ? 'Activ' : 'Inactiv'">
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-2 justify-content-center">
+                                            <a th:href="@{/service-plans/{id}(id=${plan.id})}" 
+                                               class="btn btn-sm btn-info text-white"
+                                               title="Vezi detalii">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a th:href="@{/service-plans/{id}/edit(id=${plan.id})}" 
+                                               class="btn btn-sm btn-warning text-white"
+                                               title="Editează">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <form th:action="@{/service-plans/{id}/delete(id=${plan.id})}" method="post" style="display: inline;">
+                                                <button type="submit" 
+                                                        class="btn btn-sm btn-danger"
+                                                        title="Șterge"
+                                                        onclick="return confirm('Sigur doriți să ștergeți planul \'' + '[[${plan.name}]]' + '\'?')">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

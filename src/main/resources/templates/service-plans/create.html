@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::content})}">
+<head>
+    <title>Adaugă Plan de Servicii</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="container-fluid">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    <!-- Breadcrumb -->
+                    <nav aria-label="breadcrumb" class="mb-4">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a th:href="@{/service-plans}">Planuri de Servicii</a></li>
+                            <li class="breadcrumb-item active">Adaugă Plan</li>
+                        </ol>
+                    </nav>
+
+                    <!-- Card formular -->
+                    <div class="card-modern">
+                        <div class="card-header bg-transparent border-0 p-4">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h3 class="mb-1 fw-bold">
+                                        <i class="bi bi-award me-2 text-primary"></i>Adaugă Plan Nou
+                                    </h3>
+                                    <p class="text-muted mb-0">Completează formularul pentru a crea un plan de servicii nou</p>
+                                </div>
+                                <a th:href="@{/service-plans}" class="btn btn-secondary btn-modern">
+                                    <i class="bi bi-arrow-left me-2"></i>Înapoi
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Mesaj eroare -->
+                        <div th:if="${errorMessage}" class="alert alert-danger alert-modern mx-4 mt-3 mb-0">
+                            <i class="bi bi-exclamation-circle me-2"></i><span th:text="${errorMessage}"></span>
+                        </div>
+
+                        <div class="card-body p-4">
+                            <form th:action="@{/service-plans/create}" th:object="${plan}" method="post">
+                                <div class="row g-4">
+                                    <!-- Informații de bază -->
+                                    <div class="col-12">
+                                        <h5 class="mb-3"><i class="bi bi-info-circle me-2"></i>Informații de Bază</h5>
+                                    </div>
+
+                                    <!-- Nume Plan -->
+                                    <div class="col-md-6">
+                                        <label for="name" class="form-label fw-bold">
+                                            <i class="bi bi-award me-1"></i>Nume Plan <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control form-control-modern" 
+                                               id="name" 
+                                               th:field="*{name}" 
+                                               placeholder="ex: Premium"
+                                               th:classappend="${#fields.hasErrors('name')} ? 'is-invalid'">
+                                        <div th:if="${#fields.hasErrors('name')}" class="invalid-feedback">
+                                            <span th:errors="*{name}"></span>
+                                        </div>
+                                        <small class="text-muted">Minim 2 caractere, maxim 50 caractere</small>
+                                    </div>
+
+                                    <!-- Preț -->
+                                    <div class="col-md-3">
+                                        <label for="price" class="form-label fw-bold">
+                                            <i class="bi bi-currency-dollar me-1"></i>Preț <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="number" 
+                                               step="0.01"
+                                               min="0"
+                                               class="form-control form-control-modern" 
+                                               id="price" 
+                                               th:field="*{price}" 
+                                               placeholder="0.00"
+                                               th:classappend="${#fields.hasErrors('price')} ? 'is-invalid'">
+                                        <div th:if="${#fields.hasErrors('price')}" class="invalid-feedback">
+                                            <span th:errors="*{price}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Monedă -->
+                                    <div class="col-md-3">
+                                        <label for="currency" class="form-label fw-bold">
+                                            <i class="bi bi-currency-exchange me-1"></i>Monedă <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control form-control-modern" 
+                                               id="currency" 
+                                               th:field="*{currency}" 
+                                               placeholder="USD"
+                                               maxlength="10"
+                                               th:classappend="${#fields.hasErrors('currency')} ? 'is-invalid'">
+                                        <div th:if="${#fields.hasErrors('currency')}" class="invalid-feedback">
+                                            <span th:errors="*{currency}"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Checkbox Activ -->
+                                    <div class="col-md-12">
+                                        <div class="form-check form-switch p-3 rounded" style="background: #f8fafc;">
+                                            <input class="form-check-input" 
+                                                   type="checkbox" 
+                                                   id="isActive" 
+                                                   th:field="*{isActive}"
+                                                   style="width: 50px; height: 25px; cursor: pointer;">
+                                            <label class="form-check-label ms-3 fw-bold" for="isActive">
+                                                <i class="bi bi-toggle-on me-1"></i>Plan Activ
+                                            </label>
+                                            <small class="d-block text-muted ms-5 mt-1">
+                                                Planul va fi disponibil pentru utilizatori
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Limite -->
+                                    <div class="col-12 mt-4">
+                                        <h5 class="mb-3"><i class="bi bi-sliders me-2"></i>Limite și Funcționalități</h5>
+                                    </div>
+
+                                    <!-- Max Vault Items -->
+                                    <div class="col-md-6">
+                                        <label for="maxVaultItems" class="form-label fw-bold">
+                                            <i class="bi bi-box me-1"></i>Max Vault Items
+                                        </label>
+                                        <input type="number" 
+                                               min="0"
+                                               class="form-control form-control-modern" 
+                                               id="maxVaultItems" 
+                                               th:field="*{maxVaultItems}" 
+                                               placeholder="10">
+                                        <small class="text-muted">Numărul maxim de vault items permise</small>
+                                    </div>
+
+                                    <!-- Max Password Length -->
+                                    <div class="col-md-6">
+                                        <label for="maxPasswordLength" class="form-label fw-bold">
+                                            <i class="bi bi-key me-1"></i>Max Password Length
+                                        </label>
+                                        <input type="number" 
+                                               min="0"
+                                               class="form-control form-control-modern" 
+                                               id="maxPasswordLength" 
+                                               th:field="*{maxPasswordLength}" 
+                                               placeholder="50">
+                                        <small class="text-muted">Lungimea maximă a parolei</small>
+                                    </div>
+
+                                    <!-- Max History Versions -->
+                                    <div class="col-md-6">
+                                        <label for="maxHistoryVersions" class="form-label fw-bold">
+                                            <i class="bi bi-clock-history me-1"></i>Max History Versions
+                                        </label>
+                                        <input type="number" 
+                                               min="0"
+                                               class="form-control form-control-modern" 
+                                               id="maxHistoryVersions" 
+                                               th:field="*{maxHistoryVersions}" 
+                                               placeholder="0">
+                                        <small class="text-muted">Numărul maxim de versiuni istoric</small>
+                                    </div>
+
+                                    <!-- Max Devices -->
+                                    <div class="col-md-6">
+                                        <label for="maxDevices" class="form-label fw-bold">
+                                            <i class="bi bi-devices me-1"></i>Max Devices
+                                        </label>
+                                        <input type="number" 
+                                               min="1"
+                                               class="form-control form-control-modern" 
+                                               id="maxDevices" 
+                                               th:field="*{maxDevices}" 
+                                               placeholder="1">
+                                        <small class="text-muted">Numărul maxim de dispozitive</small>
+                                    </div>
+
+                                    <!-- Features Checkboxes -->
+                                    <div class="col-12">
+                                        <div class="row g-3">
+                                            <div class="col-md-4">
+                                                <div class="form-check form-switch p-3 rounded" style="background: #f8fafc;">
+                                                    <input class="form-check-input" type="checkbox" id="canExport" th:field="*{canExport}">
+                                                    <label class="form-check-label fw-bold" for="canExport">
+                                                        <i class="bi bi-download me-1"></i>Can Export
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-switch p-3 rounded" style="background: #f8fafc;">
+                                                    <input class="form-check-input" type="checkbox" id="canImport" th:field="*{canImport}">
+                                                    <label class="form-check-label fw-bold" for="canImport">
+                                                        <i class="bi bi-upload me-1"></i>Can Import
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-switch p-3 rounded" style="background: #f8fafc;">
+                                                    <input class="form-check-input" type="checkbox" id="canShare" th:field="*{canShare}">
+                                                    <label class="form-check-label fw-bold" for="canShare">
+                                                        <i class="bi bi-share me-1"></i>Can Share
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-switch p-3 rounded" style="background: #f8fafc;">
+                                                    <input class="form-check-input" type="checkbox" id="canAttachments" th:field="*{canAttachments}">
+                                                    <label class="form-check-label fw-bold" for="canAttachments">
+                                                        <i class="bi bi-paperclip me-1"></i>Can Attachments
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-check form-switch p-3 rounded" style="background: #f8fafc;">
+                                                    <input class="form-check-input" type="checkbox" id="excludeAmbiguous" th:field="*{excludeAmbiguous}">
+                                                    <label class="form-check-label fw-bold" for="excludeAmbiguous">
+                                                        <i class="bi bi-shield-check me-1"></i>Exclude Ambiguous
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Butoane -->
+                                <div class="d-flex justify-content-end gap-2 mt-4 pt-4 border-top">
+                                    <a th:href="@{/service-plans}" class="btn btn-secondary btn-modern">
+                                        <i class="bi bi-x-circle me-2"></i>Anulează
+                                    </a>
+                                    <button type="submit" class="btn btn-primary-modern btn-modern">
+                                        <i class="bi bi-check-circle me-2"></i>Salvează Plan
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
