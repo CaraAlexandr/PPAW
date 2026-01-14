@@ -3,6 +3,7 @@ package com.ppaw.passwordvault.controller;
 import com.ppaw.passwordvault.dto.ApiResponse;
 import com.ppaw.passwordvault.dto.ServicePlanDTO;
 import com.ppaw.passwordvault.dto.UserDTO;
+import com.ppaw.passwordvault.dto.VaultItemDTO;
 import com.ppaw.passwordvault.exception.ResourceNotFoundException;
 import com.ppaw.passwordvault.exception.ValidationException;
 import com.ppaw.passwordvault.model.SharedVaultItem;
@@ -13,6 +14,7 @@ import com.ppaw.passwordvault.repository.UserRepository;
 import com.ppaw.passwordvault.repository.VaultItemRepository;
 import com.ppaw.passwordvault.service.ServicePlanService;
 import com.ppaw.passwordvault.service.UserService;
+import com.ppaw.passwordvault.service.VaultItemService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ public class VaultShareController {
     private final SharedVaultItemRepository sharedVaultItemRepository;
     private final UserService userService;
     private final ServicePlanService servicePlanService;
+    private final VaultItemService vaultItemService;
 
     @Data
     public static class ShareRequest {
@@ -101,40 +104,55 @@ public class VaultShareController {
     }
 
     /**
-     * Get items shared with current user
+     * Get items shared with current user (returns full vault item details)
      */
     @GetMapping("/received")
-    public ResponseEntity<ApiResponse<List<SharedVaultItemDTO>>> getSharedWithMe(HttpServletRequest request) {
+    public ResponseEntity<ApiResponse<List<SharedVaultItemWithDetailsDTO>>> getSharedWithMe(HttpServletRequest request) {
         Long userId = getUserId(request);
         
         List<SharedVaultItem> shared = sharedVaultItemRepository.findBySharedWithUserId(userId);
         
-        List<SharedVaultItemDTO> dtos = shared.stream()
-                .map(this::toDTO)
+        List<SharedVaultItemWithDetailsDTO> dtos = shared.stream()
+                .filter(share -> share.getVaultItem() != null && share.getSharedByUser() != null) // Filter out invalid shares
+                .map(share -> {
+                    SharedVaultItemWithDetailsDTO dto = new SharedVaultItemWithDetailsDTO();
+                    // Get full vault item details - convert VaultItem to VaultItemDTO
+                    VaultItem item = share.getVaultItem();
+                    if (item == null) {
+                        return null; // Skip if item is null
+                    }
+                    
+                    VaultItemDTO vaultItemDTO = VaultItemDTO.builder()
+                            .id(item.getId())
+                            .userId(item.getUser() != null ? item.getUser().getId() : null)
+                            .title(item.getTitle())
+                            .username(item.getUsername())
+                            .url(item.getUrl())
+                            .notes(item.getNotes())
+                            .folder(item.getFolder())
+                            .tags(item.getTags())
+                            .isFavorite(item.getIsFavorite())
+                            .createdAt(item.getCreatedAt())
+                            .updatedAt(item.getUpdatedAt())
+                            .build();
+                    dto.setVaultItem(vaultItemDTO);
+                    dto.setSharedByUsername(share.getSharedByUser() != null ? share.getSharedByUser().getUsername() : "Unknown");
+                    dto.setCanEdit(share.getCanEdit() != null ? share.getCanEdit() : false);
+                    dto.setSharedAt(share.getCreatedAt() != null ? share.getCreatedAt().toString() : "");
+                    return dto;
+                })
+                .filter(dto -> dto != null && dto.getVaultItem() != null) // Filter out null DTOs
                 .collect(Collectors.toList());
         
         return ResponseEntity.ok(ApiResponse.success("Shared items retrieved successfully", dtos));
     }
 
     @Data
-    public static class SharedVaultItemDTO {
-        private Long id;
-        private Long vaultItemId;
-        private String vaultItemTitle;
+    public static class SharedVaultItemWithDetailsDTO {
+        private VaultItemDTO vaultItem;
         private String sharedByUsername;
         private Boolean canEdit;
-        private String createdAt;
-    }
-
-    private SharedVaultItemDTO toDTO(SharedVaultItem share) {
-        SharedVaultItemDTO dto = new SharedVaultItemDTO();
-        dto.setId(share.getId());
-        dto.setVaultItemId(share.getVaultItem().getId());
-        dto.setVaultItemTitle(share.getVaultItem().getTitle());
-        dto.setSharedByUsername(share.getSharedByUser().getUsername());
-        dto.setCanEdit(share.getCanEdit());
-        dto.setCreatedAt(share.getCreatedAt().toString());
-        return dto;
+        private String sharedAt;
     }
 
     private Long getUserId(HttpServletRequest request) {

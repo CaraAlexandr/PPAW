@@ -12,7 +12,12 @@ import java.util.Optional;
 @Repository
 public interface SharedVaultItemRepository extends JpaRepository<SharedVaultItem, Long> {
     
-    List<SharedVaultItem> findBySharedWithUserId(Long userId);
+    @Query("SELECT s FROM SharedVaultItem s " +
+           "JOIN FETCH s.vaultItem v " +
+           "JOIN FETCH v.user " +
+           "JOIN FETCH s.sharedByUser " +
+           "WHERE s.sharedWithUser.id = :userId")
+    List<SharedVaultItem> findBySharedWithUserId(@Param("userId") Long userId);
     
     List<SharedVaultItem> findBySharedByUserId(Long userId);
     

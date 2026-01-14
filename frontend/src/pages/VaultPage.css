@@ -283,6 +283,28 @@
   font-size: 0.85rem;
 }
 
+.section-title {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.shared-item {
+  border-left: 4px solid #667eea;
+}
+
+.shared-badge {
+  display: inline-block;
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
+
 .item-field {
   margin: 0.75rem 0;
   color: #666;

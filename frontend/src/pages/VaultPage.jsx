@@ -8,6 +8,7 @@ import './VaultPage.css';
  */
 function VaultPage() {
   const [items, setItems] = useState([]);
+  const [sharedItems, setSharedItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -25,16 +26,21 @@ function VaultPage() {
 
   // Load vault items and plan info on mount
   useEffect(() => {
-    loadItems();
-    loadPlanInfo();
-    const savedLimits = localStorage.getItem('planLimits');
-    const savedPlanName = localStorage.getItem('servicePlanName');
-    if (savedLimits) {
-      setPlanLimits(JSON.parse(savedLimits));
-    }
-    if (savedPlanName) {
-      setServicePlanName(savedPlanName);
-    }
+    const loadAll = async () => {
+      // Load plan info and items in parallel
+      const savedLimits = localStorage.getItem('planLimits');
+      const savedPlanName = localStorage.getItem('servicePlanName');
+      if (savedLimits) {
+        setPlanLimits(JSON.parse(savedLimits));
+      }
+      if (savedPlanName) {
+        setServicePlanName(savedPlanName);
+      }
+      
+      // Load plan info and items
+      await Promise.all([loadPlanInfo(), loadItems()]);
+    };
+    loadAll();
   }, []);
 
   const loadPlanInfo = async () => {
@@ -52,8 +58,29 @@ function VaultPage() {
   const loadItems = async () => {
     try {
       setLoading(true);
+      // Load owned items
       const response = await apiClient.get('/vault');
       setItems(response.data.data || []);
+      
+      // Always try to load shared items - backend will handle permissions
+      try {
+        const sharedResponse = await apiClient.get('/vault/share/received');
+        if (sharedResponse.data.success && sharedResponse.data.data) {
+          console.log('Shared items response:', sharedResponse.data.data);
+          // Ensure we have valid data structure
+          const validSharedItems = Array.isArray(sharedResponse.data.data) 
+            ? sharedResponse.data.data.filter(item => item && item.vaultItem)
+            : [];
+          setSharedItems(validSharedItems);
+        } else {
+          setSharedItems([]);
+        }
+      } catch (err) {
+        // Silently fail for shared items - user might not have sharing enabled
+        console.log('Shared items not available or no items shared:', err);
+        setSharedItems([]);
+      }
+      
       setError('');
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load vault items');
@@ -357,50 +384,100 @@ function VaultPage() {
         </div>
       )}
 
-      <div className="items-grid">
-        {items.length === 0 ? (
-          <div className="empty-state">
-            <p>No vault items yet. Click "Add Item" to create your first item.</p>
-          </div>
-        ) : (
-          items.map((item) => (
-            <div key={item.id} className="vault-item-card">
-              <div className="item-header">
-                <h3>{item.title}</h3>
-                <div className="item-actions">
-                  <button onClick={() => handleEdit(item)} className="btn-edit">Edit</button>
-                  {planLimits?.canShare && (
-                    <button 
-                      onClick={() => {
-                        const sharedWith = prompt('Enter username or email to share with:');
-                        if (sharedWith) handleShare(item.id, sharedWith);
-                      }} 
-                      className="btn-share"
-                      title="Share"
-                    >
-                      Share
-                    </button>
-                  )}
-                  <button onClick={() => handleDelete(item.id)} className="btn-delete">Delete</button>
+      {items.length > 0 && (
+        <div>
+          <h2 className="section-title">My Items</h2>
+          <div className="items-grid">
+            {items.map((item) => (
+              <div key={item.id} className="vault-item-card">
+                <div className="item-header">
+                  <h3>{item.title}</h3>
+                  <div className="item-actions">
+                    <button onClick={() => handleEdit(item)} className="btn-edit">Edit</button>
+                    {planLimits?.canShare && (
+                      <button 
+                        onClick={() => {
+                          const sharedWith = prompt('Enter username or email to share with:');
+                          if (sharedWith) handleShare(item.id, sharedWith);
+                        }} 
+                        className="btn-share"
+                        title="Share"
+                      >
+                        Share
+                      </button>
+                    )}
+                    <button onClick={() => handleDelete(item.id)} className="btn-delete">Delete</button>
+                  </div>
                 </div>
+                {item.username && <p className="item-field"><strong>Username:</strong> {item.username}</p>}
+                {item.url && (
+                  <p className="item-field">
+                    <strong>URL:</strong>{' '}
+                    <a href={item.url} target="_blank" rel="noopener noreferrer">
+                      {item.url}
+                    </a>
+                  </p>
+                )}
+                {item.notes && <p className="item-field"><strong>Notes:</strong> {item.notes}</p>}
+                {item.createdAt && (
+                  <p className="item-date">Created: {new Date(item.createdAt).toLocaleDateString()}</p>
+                )}
               </div>
-              {item.username && <p className="item-field"><strong>Username:</strong> {item.username}</p>}
-              {item.url && (
-                <p className="item-field">
-                  <strong>URL:</strong>{' '}
-                  <a href={item.url} target="_blank" rel="noopener noreferrer">
-                    {item.url}
-                  </a>
-                </p>
-              )}
-              {item.notes && <p className="item-field"><strong>Notes:</strong> {item.notes}</p>}
-              {item.createdAt && (
-                <p className="item-date">Created: {new Date(item.createdAt).toLocaleDateString()}</p>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {sharedItems.length > 0 && (
+        <div style={{ marginTop: '2rem' }}>
+          <h2 className="section-title">Shared With Me</h2>
+          <div className="items-grid">
+            {sharedItems
+              .filter(sharedItem => sharedItem && sharedItem.vaultItem) // Filter out invalid items
+              .map((sharedItem) => {
+                const item = sharedItem.vaultItem;
+                if (!item) return null; // Safety check
+                
+                return (
+                  <div key={`shared-${item.id || sharedItem.id}`} className="vault-item-card shared-item">
+                    <div className="item-header">
+                      <h3>
+                        {item.title || 'Untitled'}
+                        <span className="shared-badge">Shared by {sharedItem.sharedByUsername || 'Unknown'}</span>
+                      </h3>
+                      <div className="item-actions">
+                        {sharedItem.canEdit && (
+                          <button onClick={() => handleEdit(item)} className="btn-edit">Edit</button>
+                        )}
+                      </div>
+                    </div>
+                    {item.username && <p className="item-field"><strong>Username:</strong> {item.username}</p>}
+                    {item.url && (
+                      <p className="item-field">
+                        <strong>URL:</strong>{' '}
+                        <a href={item.url} target="_blank" rel="noopener noreferrer">
+                          {item.url}
+                        </a>
+                      </p>
+                    )}
+                    {item.notes && <p className="item-field"><strong>Notes:</strong> {item.notes}</p>}
+                    {sharedItem.sharedAt && (
+                      <p className="item-date">Shared: {new Date(sharedItem.sharedAt).toLocaleDateString()}</p>
+                    )}
+                  </div>
+                );
+              })
+              .filter(Boolean) // Remove any null entries
+            }
+          </div>
+        </div>
+      )}
+
+      {items.length === 0 && sharedItems.length === 0 && (
+        <div className="empty-state">
+          <p>No vault items yet. Click "Add Item" to create your first item.</p>
+        </div>
+      )}
     </div>
   );
 }
